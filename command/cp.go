@@ -112,6 +112,10 @@ var copyCommandFlags = []cli.Flag{
 		Aliases: []string{"a"},
 		Usage:   "the canned ACL to apply to the objects being uploaded",
 	},
+	&cli.StringFlag{
+		Name:  "cache-control",
+		Usage: "can be used to specify caching behavior along the request/reply chain",
+	},
 }
 
 var copyCommand = &cli.Command{
@@ -140,6 +144,7 @@ var copyCommand = &cli.Command{
 			concurrency:    c.Int("concurrency"),
 			partSize:       c.Int64("part-size") * megabytes,
 			acl:            c.String("acl"),
+			cacheControl:   c.String("cache-control"),
 		}.Run(c.Context)
 	},
 }
@@ -167,6 +172,9 @@ type Copy struct {
 
 	// ACL
 	acl string
+
+	// CacheControl
+	cacheControl string
 }
 
 const fdlimitWarning = `
@@ -392,6 +400,7 @@ func (c Copy) doUpload(ctx context.Context, srcurl *url.URL, dsturl *url.URL) er
 		"StorageClass": string(c.storageClass),
 		"ContentType":  guessContentType(f),
 		"ACL":          string(c.acl),
+		"CacheControl": string(c.cacheControl),
 	}
 
 	err = dstClient.Put(ctx, f, dsturl, metadata, c.concurrency, c.partSize)

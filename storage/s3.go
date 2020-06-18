@@ -379,6 +379,11 @@ func (s *S3) Put(
 		input.ACL = aws.String(acl)
 	}
 
+	cacheControl := metadata["CacheControl"]
+	if cacheControl != "" {
+		input.CacheControl = aws.String(cacheControl)
+	}
+
 	_, err := s.uploader.UploadWithContext(ctx, input, func(u *s3manager.Uploader) {
 		u.PartSize = partSize
 		u.Concurrency = concurrency
