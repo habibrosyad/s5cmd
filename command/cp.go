@@ -107,6 +107,11 @@ var copyCommandFlags = []cli.Flag{
 		Value:   defaultPartSize,
 		Usage:   "size of each part transferred between host and remote server, in MiB",
 	},
+	&cli.StringFlag{
+		Name:    "acl",
+		Aliases: []string{"a"},
+		Usage:   "the canned ACL to apply to the objects being uploaded",
+	},
 }
 
 var copyCommand = &cli.Command{
@@ -134,6 +139,7 @@ var copyCommand = &cli.Command{
 			storageClass:   storage.StorageClass(c.String("storage-class")),
 			concurrency:    c.Int("concurrency"),
 			partSize:       c.Int64("part-size") * megabytes,
+			acl:            c.String("acl"),
 		}.Run(c.Context)
 	},
 }
@@ -158,6 +164,9 @@ type Copy struct {
 	// s3 options
 	concurrency int
 	partSize    int64
+
+	// ACL
+	acl string
 }
 
 const fdlimitWarning = `
@@ -382,6 +391,7 @@ func (c Copy) doUpload(ctx context.Context, srcurl *url.URL, dsturl *url.URL) er
 	metadata := map[string]string{
 		"StorageClass": string(c.storageClass),
 		"ContentType":  guessContentType(f),
+		"ACL":          string(c.acl),
 	}
 
 	err = dstClient.Put(ctx, f, dsturl, metadata, c.concurrency, c.partSize)

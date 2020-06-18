@@ -374,6 +374,11 @@ func (s *S3) Put(
 		input.StorageClass = aws.String(storageClass)
 	}
 
+	acl := metadata["ACL"]
+	if acl != "" {
+		input.ACL = aws.String(acl)
+	}
+
 	_, err := s.uploader.UploadWithContext(ctx, input, func(u *s3manager.Uploader) {
 		u.PartSize = partSize
 		u.Concurrency = concurrency
